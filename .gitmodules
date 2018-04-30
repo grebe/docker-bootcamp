@@ -1,0 +1,3 @@
+[submodule "generator-bootcamp"]
+	path = generator-bootcamp
+	url = git@github.com:ucb-bar/generator-bootcamp.git
