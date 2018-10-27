@@ -2,14 +2,10 @@ FROM jupyter/minimal-notebook
 
 USER root
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl verilator openssh-client && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN echo 'deb http://cdn-fastly.deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list && \
     apt-get -y update && \
+    apt-get install -y --no-install-recommends \
+    curl verilator openssh-client && \
     apt-get install --no-install-recommends -t jessie-backports -y openjdk-8-jre-headless openjdk-8-jdk-headless ca-certificates-java && \
     rm /etc/apt/sources.list.d/jessie-backports.list && \
     apt-get clean && \
@@ -17,17 +13,21 @@ RUN echo 'deb http://cdn-fastly.deb.debian.org/debian jessie-backports main' > /
 
 USER $NB_USER
 
-RUN cd && git clone https://github.com/jupyter-scala/jupyter-scala.git && \
-   cd jupyter-scala && ./jupyter-scala
+RUN cd && git clone -b v0.1.9 https://github.com/almond-sh/almond.git \
+    cd almond \
+    curl -L -o coursier https://git.io/coursier && chmod +x coursier \
+    SCALA_VERSION=2.11.12 ALMOND_VERSION=0.1.9 \
+    ./coursier bootstrap \
+        -i user -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
+        sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
+        -o almond \
+    ./almond --install
 
-RUN cd && git clone https://github.com/ucb-art/dsp-framework.git;  \
-   cd dsp-framework && ./update.bash no_hwacha && SBT="java -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx8G -Xss128M -jar $PWD/rocket-chip/sbt-launch.jar" make libs;  cd && rm -rf dsp-framework
-
-USER root
+# USER root
 
 Add generator-bootcamp generator-bootcamp
 
-RUN cd && chown -R $NB_USER generator-bootcamp
+# RUN cd && chown -R $NB_USER generator-bootcamp
 
-USER $NB_USER
+# USER $NB_USER
 
